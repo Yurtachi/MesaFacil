@@ -21,7 +21,7 @@ MESA = r'(\d{2,4})'
 COOKIE = 'mf_admin'
 MAX_BODY = 16_384
 TYPES = {'.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8',
-         '.js': 'text/javascript; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon'}
+         '.js': 'text/javascript; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.woff2': 'font/woff2', '.txt': 'text/plain; charset=utf-8'}
 PAGES = {'/': 'index.html', '/admin': 'admin.html', '/admin/placas': 'placas.html'}
 CSP = ("default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'; "
        "frame-ancestors 'none'; base-uri 'none'; form-action 'self'; object-src 'none'")
@@ -426,7 +426,7 @@ class Handler(BaseHTTPRequestHandler):
             return self.static(WEB / 'mesa.html')
         if path in PAGES:
             return self.static(WEB / PAGES[path])
-        m = re.fullmatch(r'/assets/([\w.-]+\.(?:css|js|svg|png|ico))', path)
+        m = re.fullmatch(r'/assets/((?:fonts/)?[\w-]+(?:[.-][\w-]+)*\.(?:css|js|svg|png|ico|woff2|txt))', path)
         if m and (WEB / 'assets' / m.group(1)).is_file():
             return self.static(WEB / 'assets' / m.group(1))
         return self.send_error_json(404, 'Página não encontrada')

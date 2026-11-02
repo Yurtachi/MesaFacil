@@ -1,7 +1,20 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><meta name="theme-color" content="#0c1513"/><title>MesaFácil — Simulador de sinuca</title><link rel="stylesheet" href="/style.css"></head>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="theme-color" content="#07130e">
+<meta name="color-scheme" content="dark">
+<title>MesaFácil — escolha sua mesa</title>
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="/assets/fonts/manrope-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/app.css">
+</head>
 <body>
-  <div class="top-warning">AMBIENTE DE DEMONSTRAÇÃO <span>•</span> NENHUM PIX REAL É GERADO <span>•</span> NENHUMA MESA FÍSICA É ACIONADA</div>
-  <div id="app"><main class="loading">Iniciando demonstração…</main></div>
-  <script src="/app.js" defer></script>
-</body></html>
+<a class="skip" href="#main">Ir para o conteúdo</a>
+<div id="app"><main id="main" class="shell narrow" aria-busy="true"><div class="skeleton sk-title"></div><div class="skeleton sk-block"></div></div></div>
+<noscript><main class="shell narrow"><p class="notice bad">Ative o JavaScript para usar o MesaFácil.</p></main></noscript>
+<script src="/assets/common.js" defer></script>
+<script src="/assets/home.js" defer></script>
+</body>
+</html>
