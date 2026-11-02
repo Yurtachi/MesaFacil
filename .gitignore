@@ -1,0 +1,6 @@
+*.sqlite3
+*.sqlite3-*
+device_keys.json
+privado/
+__pycache__/
+.pytest_cache/

@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "author": "MesaFacil POC",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 45, "left": -115, "attrs": {} },
+    { "type": "wokwi-pushbutton", "id": "blueButton", "top": 30, "left": 170, "attrs": {"color": "blue", "label": "BOTAO AZUL"} },
+    { "type": "wokwi-relay-module", "id": "relay", "top": 145, "left": 185, "attrs": {} },
+    { "type": "wokwi-led", "id": "led", "top": 240, "left": 220, "attrs": {"color": "green", "label": "PULSO"} },
+    { "type": "wokwi-resistor", "id": "resistor", "top": 245, "left": 140, "rotate": 90, "attrs": {"value": "220"} }
+  ],
+  "connections": [
+    ["esp:27", "blueButton:1.l", "blue", []],
+    ["esp:GND.1", "blueButton:2.l", "black", []],
+    ["esp:26", "relay:IN", "green", []],
+    ["esp:3V3", "relay:VCC", "red", []],
+    ["esp:GND.2", "relay:GND", "black", []],
+    ["esp:2", "resistor:1", "green", []],
+    ["resistor:2", "led:A", "green", []],
+    ["led:C", "esp:GND.3", "black", []],
+    ["esp:TX", "$serialMonitor:RX", "", []],
+    ["esp:RX", "$serialMonitor:TX", "", []]
+  ],
+  "dependencies": {}
+}
