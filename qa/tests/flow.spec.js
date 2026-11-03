@@ -17,10 +17,11 @@ test('cliente: pagar (simulado) -> aguardar botao -> mesa liberada', async ({ pa
   await expect(page.getByRole('heading', { name: 'Pagamento aprovado' })).toBeVisible();
   // controlador busca o credito e depois conclui o pulso
   const cmd = (await (await request.get('/api/dispositivos/01/proximo.txt', { headers: dev })).text()).trim();
-  await expect(page.getByText('Mesa pronta')).toBeVisible({ timeout: 8000 });
+  await expect(page.getByText('Aperte o botão da mesa 01')).toBeVisible({ timeout: 8000 });
   await expect(page.getByRole('heading', { name: 'Mesa liberada' })).toHaveCount(0); // 200 de entrega nao e liberacao
   await request.post('/api/dispositivos/01/confirmar', { data: { comando: cmd, duracao_ms: 350 }, headers: dev });
   await expect(page.getByRole('heading', { name: 'Mesa liberada' })).toBeVisible({ timeout: 8000 });
+  await page.waitForTimeout(1800);
   await shot(page, 'fluxo', 'cliente-liberada');
   await page.reload(); // estado vem do servidor
   await expect(page.getByRole('heading', { name: 'Mesa liberada' })).toBeVisible();
@@ -100,4 +101,31 @@ test('modo reduzido de movimento nao esconde conteudo', async ({ browser }, info
   await page.goto('/mesa/05');
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
   await ctx.close();
+});
+
+test('seguranca do frontend: sem violacao de CSP, sem requisicao externa, sem token em respostas publicas', async ({ page, browser }, info) => {
+  test.skip(info.project.name !== 'w390');
+  const external = [], problems = [];
+  const origin = new URL(info.config.projects[0].use.baseURL || 'http://127.0.0.1:8791').origin;
+  for (const p of [page]) {
+    p.on('request', r => { if (!r.url().startsWith(origin) && !r.url().startsWith('data:') && !r.url().startsWith('blob:')) external.push(r.url()); });
+    p.on('console', m => { if (['error', 'warning'].includes(m.type())) problems.push(m.text()); });
+    p.on('pageerror', e => problems.push(e.message));
+  }
+  for (const url of ['/', '/mesa/01', '/mesa/77', '/admin']) { await page.goto(url); await page.waitForLoadState('networkidle'); await page.waitForTimeout(500); }
+  const bodies = [];
+  page.on('response', async r => { if (r.url().includes('/api/') && !r.url().includes('/api/admin')) bodies.push(await r.text().catch(() => '')); });
+  await page.goto('/mesa/01'); await page.waitForTimeout(800);
+  const keys = Object.values(require('../.tmp/keys.json'));
+  for (const b of bodies) for (const k of keys) expect(b).not.toContain(k);
+  expect(external).toEqual([]);
+  expect(problems.filter(t => !t.includes('404'))).toEqual([]); // 404 esperado em /mesa/77
+});
+
+test('admin: API administrativa nao responde sem sessao mesmo com o frontend novo', async ({ request }, info) => {
+  test.skip(info.project.name !== 'w390');
+  for (const path of ['/api/admin/resumo', '/api/admin/auditoria', '/api/admin/backup']) expect((await request.get(path)).status()).toBe(401);
+  expect((await request.post('/api/admin/mesas/01/liberar', { data: { motivo: 'sem sessao' } })).status()).toBe(401);
+  const r = await request.get('/api/admin/estado');
+  expect(await r.json()).toEqual({ autenticado: false });
 });

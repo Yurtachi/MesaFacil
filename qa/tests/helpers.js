@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const TMP = path.join(__dirname, '..', '.tmp');
-const SHOTS = path.join(__dirname, '..', '..', 'docs', 'qa', 'screenshots');
+const SHOTS = path.join(__dirname, '..', '..', 'docs', 'qa', 'screenshots', 'v2');
 
 exports.states = () => JSON.parse(fs.readFileSync(path.join(TMP, 'states.json'), 'utf8'));
 exports.adminState = path.join(TMP, 'admin.json');

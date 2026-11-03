@@ -1,0 +1,142 @@
+boot: WiFi conectado
+Serial de boot:
+ets Jul 29 2019 12:21:46
+
+rst:0x1 (POWERON_RESET),boot:0x12 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:1396
+load:0x40078000,len:13700
+load:0x40080400,len:3008
+entry 0x40080574
+[   246][E][Preferences.cpp:506] getString(): nvs_get_str len fail: started NOT_FOUND
+[   261][E][Preferences.cpp:506] getString(): nvs_get_str len fail: done NOT_FOUND
+MesaFacil v0.4, mesa 01 - SOMENTE SIMULACAO
+Servidor: http://host.docker.internal:8777
+Conectando ao WiFi do Velxio...
+
+W (9266) phy_init: failed to load RF calibration data (0x1102), falling back to full calibration
+
+
+
+
+
+
+
+WiFi conectado: 192.168.4.15, gateway 192.168.4.2
+
+
+
+
+
+===== T1 fluxo completo =====
+POST /api/pedidos mesa=01 -> pedido 15890915.. status PENDENTE
+POST /api/demo/pagar -> HTTP 200 status=PAGO
+firmware recebeu comando: True | backend: status=PAGO comando=ENTREGUE etapa=aguardando_botao
+pulsos GPIO26 em nivel BAIXO (inicio_s, duracao_s): [(14.28, 0.364)]
+backend final: status=LIBERADO comando=EXECUTADO etapa=concluido
+--- Serial T1 ---
+Mesa 01: pagamento de TESTE confirmado. Pressione o botao.
+FICHAS LIBERADAS (simuladas): iniciando pulso 350ms.
+Saida desligada: 350 ms encerrados.
+ACK: HTTP 200
+Mesa liberada confirmada no painel.
+--- fim ---
+
+===== T2 segundo clique sem novo pagamento =====
+pulsos novos: 0 | backend: status=LIBERADO comando=EXECUTADO etapa=concluido
+--- Serial T2 ---
+BOTAO: sem credito liberado; nenhuma acao.
+BOTAO: sem credito liberado; nenhuma acao.W (22670) periph_ctrl: phy module clock bits 0x0, required 0x8f8f
+--- fim ---
+
+===== T3 segundo pagamento legitimo =====
+POST /api/pedidos mesa=01 -> pedido d9de25a3.. status PENDENTE
+POST /api/demo/pagar -> HTTP 200 status=PAGO
+pulsos novos: 1 | ids distintos: True | backend: status=LIBERADO comando=EXECUTADO etapa=concluido
+--- Serial T3 ---
+Mesa 01: pagamento de TESTE confirmado. Pressione o botao.
+FICHAS LIBERADAS (simuladas): iniciando pulso 350ms.
+Saida desligada: 350 ms encerrados.
+ACK: HTTP 200
+Mesa liberada confirmada no painel.
+--- fim ---
+
+===== T7 ACK perdido (backend cai logo apos o pulso) =====
+POST /api/pedidos mesa=01 -> pedido 6540ae3c.. status PENDENTE
+POST /api/demo/pagar -> HTTP 200 status=PAGO
+backend PARADO apos "FICHAS LIBERADAS"
+ACK falhos durante a queda: 3 | pulsos: 1
+backend RESTAURADO (mesmo banco)
+pulsos apos restaurar: 1 | backend: status=LIBERADO comando=EXECUTADO etapa=concluido
+--- Serial T7 ---
+Mesa 01: pagamento de TESTE confirmado. Pressione o botao.
+FICHAS LIBERADAS (simuladas): iniciando pulso 350ms.
+Saida desligada: 350 ms encerrados.
+[ 28116][E][NetworkClient.cpp:278] connect(): socket error on fd 54, errno: 104, "Connection reset by peer"
+ACK: HTTP -1
+[ 30122][E][NetworkClient.cpp:278] connect(): socket error on fd 54, errno: 104, "Connection reset by peer"
+ACK: HTTP -1
+[ 32099][E][NetworkClient.cpp:278] connect(): socket error on fd 54, errno: 104, "Connection reset by peer"
+ACK: HTTP -1
+ACK: HTTP 200
+Mesa liberada confirmada no painel.
+--- fim ---
+
+===== T6 backend fora do ar: firmware nao cria autorizacao =====
+backend PARADO (firmware ocioso, sem credito)
+--- Serial T6 (backend fora) ---
+[ 36112][E][NetworkClient.cpp:278] connect(): socket error on fd 54, errno: 104, "Connection reset by peer"
+POLL: HTTP -1 (sem liberar)
+[ 38106][E][NetworkClient.cpp:278] connect(): socket error on fd 54, errno: 104, "Connection reset by peer"
+POLL: HTTP -1 (sem liberar)
+[ 40120][E][NetworkClient.cpp:278] connect(): socket error on fd 54, errno: 104, "Connection reset by peer"
+POLL: HTTP -1 (sem liberar)
+[ 42127][E][NetworkClient.cpp:278] connect(): socket error on fd 54, errno: 104, "Connection reset by peer"
+POLL: HTTP -1 (sem liberar)
+BOTAO: sem credito liberado; nenhuma acao.
+[ 44120][E][NetworkClient.cpp:278] connect(): socket error on fd 54, errno: 104, "Connection reset by peer"
+POLL: HTTP -1 (sem liberar)
+BOTAO: sem credito liberado; nenhuma acao.
+[ 46139][E][NetworkClient.cpp:278] connect(): socket error on fd 54, errno: 104, "Connection reset by peer"
+POLL: HTTP -1 (sem liberar)
+--- fim ---
+pulsos durante queda: 0
+backend restaurado; pulsos apos volta sem pedido: 0
+--- Serial T6 (apos volta, botao sem credito) ---
+BOTAO: sem credito liberado; nenhuma acao.
+--- fim ---
+
+===== T10 mesa 01 (Velxio) + mesa 02 (sim_esp32.py) sem mistura =====
+pagos: mesa01 4921d958 mesa02 a0411c31
+apos 6 s (sem botao em 01): mesa01 status=PAGO comando=ENTREGUE etapa=aguardando_botao | mesa02 status=LIBERADO comando=EXECUTADO etapa=concluido
+apos botao em 01: mesa01 status=LIBERADO comando=EXECUTADO etapa=concluido | mesa02 status=LIBERADO comando=EXECUTADO etapa=concluido
+--- saida sim_esp32 --mesa 02 ---
+Simuladores de controlador ativos: 02
+[sim 02] pulso 350 ms (simulado) cmd e86ad33b
+--- fim ---
+comandos (id, mesa, pedido, status): [('43d4b47e', '01', '15890915', 'EXECUTADO'), ('e8f96958', '01', 'd9de25a3', 'EXECUTADO'), ('7d3831bb', '01', '6540ae3c', 'EXECUTADO'), ('bca0f384', '01', '4921d958', 'EXECUTADO'), ('e86ad33b', '02', 'a0411c31', 'EXECUTADO')]
+pulsos mesa01 (GPIO26 Velxio): 1 | pulsos simulados mesa02: 1
+--- Serial T10 ---
+Mesa 01: pagamento de TESTE confirmado. Pressione o botao.
+FICHAS LIBERADAS (simuladas): iniciando pulso 350ms.
+Saida desligada: 350 ms encerrados.
+ACK: HTTP 200
+Mesa liberada confirmada no painel.
+--- fim ---
+comandos cuja mesa difere da mesa do pedido: 0
+
+===== T8 mesa errada =====
+token da mesa 02 em /01/proximo.txt: HTTP 401 {'erro': 'Credencial inválida'}
+token da mesa 01 em /02/proximo.txt: HTTP 401 {'erro': 'Credencial inválida'}
+sem token em /01/proximo.txt: HTTP 401 {'erro': 'Credencial inválida'}
+token 01 em mesa inexistente /99/proximo.txt: HTTP 401 {'erro': 'Credencial inválida'}
+token 02 em /01/confirmar (comando da 01): HTTP 401 {'erro': 'Credencial inválida'}
+token 01 em /01/confirmar com comando da mesa 02: HTTP 404 {'erro': 'Comando não pertence a esta mesa'}
+token 02 em /02/incerto com comando da mesa 01: HTTP 404 {'erro': 'Comando não pertence a esta mesa'}
+estado dos pedidos intacto: mesa01 LIBERADO mesa02 LIBERADO
+
+auditoria (ultimos eventos): ['LOGIN ', 'LOGIN ']
+
+RESULTADOS casos_a: {"T1": "PASS", "T2": "PASS", "T3": "PASS", "T7": "PASS", "T6": "PASS", "T10": "PASS", "T8": "PASS"}

@@ -14,6 +14,8 @@ module.exports = async () => {
   const order = async mesa => (await post('/api/pedidos', { mesa })).pedido;
   const next = async mesa => (await (await api.get(`/api/dispositivos/${mesa}/proximo.txt`, { headers: dev(mesa) })).text()).trim();
   const states = {};
+  // heartbeat: a maioria dos controladores aparece online; 07, 10 e 11 ficam offline para exibir esse estado
+  for (const m of ['01', '02', '03', '04', '05', '06', '08', '09']) await api.get(`/api/dispositivos/${m}/proximo.txt`, { headers: dev(m) });
 
   // prova de estado ja preparado em execucao anterior com o mesmo banco
   states.aguardando = await order('02');
@@ -39,6 +41,14 @@ module.exports = async () => {
   // nome longo e hostil: prova escape e quebra de linha
   await adm.post('/api/admin/mesas/10', { data: { nome: 'Mesa VIP <img src=x onerror=alert(1)>' }, headers: H });
   await adm.post('/api/admin/mesas', { data: { nome: 'Mesa 11 reserva' }, headers: H });
+  // mesas extras livres e online para os testes de animação (12..16); credenciais ficam só no arquivo temporário de QA
+  const extra = { ...keys };
+  for (let i = 12; i <= 16; i++) {
+    const r = await (await adm.post('/api/admin/mesas', { data: { nome: `Mesa ${i}` }, headers: H })).json();
+    extra[r.id] = r.token;
+    await api.get(`/api/dispositivos/${r.id}/proximo.txt`, { headers: { Authorization: `Bearer ${r.token}` } });
+  }
+  fs.writeFileSync(path.join(TMP, 'keys.json'), JSON.stringify(extra));
   await adm.post('/api/admin/mesas/09/liberar', { data: { motivo: 'ficha presa, conferido pelo atendente' }, headers: H });
   await adm.storageState({ path: path.join(TMP, 'admin.json') });
   fs.writeFileSync(path.join(TMP, 'states.json'), JSON.stringify(states));
