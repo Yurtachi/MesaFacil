@@ -70,7 +70,7 @@ function brand(subtitle, href = '/') {
 }
 
 function demoBanner() {
-  return h('p', { class: 'demo-banner', role: 'note' }, 'Modo demonstração: nenhum pagamento real é feito e nenhuma mesa física é acionada.');
+  return h('p', { class: 'demo-pill', role: 'note' }, 'Demonstração: nenhum pagamento real, nenhuma mesa física');
 }
 
 let toastTimer;

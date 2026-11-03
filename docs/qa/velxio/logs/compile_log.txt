@@ -1,0 +1,23 @@
+estado=done duracao=15s success=True error=None
+--- stdout ---
+
+[1/9] Performing build step for 'bootloader'
+[1/1] cd /var/lib/velxio-build/esp32/v_b6ef22a62ee4/project/build/bootloader/esp-idf/esptool_py && python /opt/esp-idf-v5/components/partition_table/check_sizes.py --offset 0x8000 bootloader 0x1000 /var/lib/velxio-build/esp32/v_b6ef22a62ee4/project/build/bootloader/bootloader.bin
+Bootloader binary size 0x4710 bytes. 0x28f0 bytes (37%) free.
+[2/9] No install step for 'bootloader'
+[3/9] Completed 'bootloader'
+[4/9] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/sketch.ino.cpp.obj
+[5/9] Linking C static library esp-idf/main/libmain.a
+[6/9] Generating esp-idf/esp_system/ld/sections.ld
+[7/9] Linking CXX executable velxio-sketch.elf
+[8/9] Generating binary image from built executable
+esptool.py v4.12.0
+Creating esp32 image...
+Merged 2 ELF sections
+Successfully created esp32 image.
+Generated /var/lib/velxio-build/esp32/v_b6ef22a62ee4/project/build/velxio-sketch.bin
+[9/9] cd /var/lib/velxio-build/esp32/v_b6ef22a62ee4/project/build/esp-idf/esptool_py && python /opt/esp-idf-v5/components/partition_table/check_sizes.py --offset 0x8000 partition --type app /var/lib/velxio-build/esp32/v_b6ef22a62ee4/project/build/partition_table/partition-table.bin /var/lib/velxio-build/esp32/v_b6ef22a62ee4/project/build/velxio-sketch.bin
+velxio-sketch.bin binary size 0xe71e0 bytes. Smallest app partition is 0x300000 bytes. 0x218e20 bytes (70%) free.
+
+--- stderr ---
+

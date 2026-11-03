@@ -25,6 +25,7 @@ const adminPages = [
 async function check(page, project, name) {
   await page.waitForLoadState('networkidle');
   await page.evaluate(() => document.fonts.ready);
+  await page.waitForFunction(() => document.getAnimations().filter(a => a.playState === 'running' && a.effect?.getComputedTiming().iterations !== Infinity).length === 0, null, { timeout: 6000 }).catch(() => {});
   await page.waitForTimeout(400); // fim das animacoes de entrada
   const problems = await layoutProblems(page);
   await shot(page, project, name);

@@ -1,11 +1,16 @@
 'use strict';
-/* Fluxo do cliente: /mesa/NN. Estados vêm do servidor (campo `etapa`); o navegador nunca aprova pagamento real. */
+/* Fluxo do cliente: /mesa/NN. O estado vem do servidor (campo `etapa`); o navegador nunca aprova pagamento real.
+   O palco (Stage) é decorativo: só reflete a etapa recebida, nunca a antecipa. */
 const mesaId = location.pathname.split('/')[2];
 const storeKey = `mf_pedido_${mesaId}`;
-let table = null, order = null, busy = false, offline = false, error = '', lastSig = '', stopPoll = null;
+let table = null, order = null, busy = false, offline = false, error = '', lastSig = '', stopPoll = null, ui = null, lastEtapa = null;
 
 const STEPS = ['Pagamento', 'Crédito na mesa', 'Mesa liberada'];
 const TERMINAL = ['concluido', 'recusado', 'cancelado', 'expirado'];
+const CAPTION = {
+  none: 'Pagamento da mesa', aguardando_pagamento: 'Aguardando pagamento', processando: 'Processando', aguardando_botao: 'Aperte o botão',
+  liberando: 'Liberando', concluido: 'Mesa liberada', analise: 'Em conferência', recusado: 'Pagamento recusado', cancelado: 'Compra cancelada', expirado: 'Cobrança expirada',
+};
 
 function stepStates(etapa) {
   const now = { aguardando_pagamento: 0, processando: 0, aguardando_botao: 1, liberando: 1, analise: 1, concluido: 3 }[etapa] ?? -1;
@@ -22,13 +27,12 @@ function setOrder(id) {
 
 async function run(fn) {
   if (busy) return;
-  busy = true; error = ''; draw(true);
+  busy = true; error = ''; draw();
   try { await fn(); } catch (e) { error = e.message; if (e.status === 404 && order) setOrder(null); }
   busy = false;
   startPoll();
   await refresh(true);
 }
-
 function startPoll() { stopPoll?.(); stopPoll = poll(() => refresh(false), { base: 2000 }); }
 
 const startOrder = () => run(async () => { const o = await api('/api/pedidos', { mesa: mesaId }); setOrder(o.pedido); });
@@ -50,10 +54,16 @@ function demoButtons() {
   }
   return h('div', { class: 'stack' },
     h('div', { class: 'notice warn' }, h('strong', null, 'Pagamento de demonstração'), 'Os botões abaixo simulam a resposta do banco. Nenhum dinheiro é movimentado.'),
-    h('button', { class: 'btn primary block', onclick: () => demoPay('aprovado'), disabled: busy }, 'Simular pagamento aprovado'),
+    h('button', { id: 'b-ok', class: 'btn primary block', onclick: () => demoPay('aprovado'), disabled: busy }, 'Simular pagamento aprovado'),
     h('div', { class: 'row' },
-      h('button', { class: 'btn grow', onclick: () => demoPay('recusado'), disabled: busy }, 'Simular recusa'),
-      h('button', { class: 'btn grow', onclick: () => demoPay('pendente'), disabled: busy }, 'Simular processamento')));
+      h('button', { id: 'b-no', class: 'btn grow', onclick: () => demoPay('recusado'), disabled: busy }, 'Simular recusa'),
+      h('button', { id: 'b-wait', class: 'btn grow', onclick: () => demoPay('pendente'), disabled: busy }, 'Simular processamento')));
+}
+
+function pressBlock(received) {
+  return h('div', { class: 'press' + (received ? '' : ' waiting') }, Art.buttonArt(),
+    h('div', { class: 'stack' }, h('h3', null, received ? `Aperte o botão da mesa ${order.mesa}` : 'Enviando o crédito'),
+      h('p', { class: 'muted small' }, received ? 'O botão fica na própria mesa. A liberação só conta depois que ele for apertado.' : 'Ainda não foi liberado. Esta tela avisa quando a mesa receber o crédito.')));
 }
 
 function panel() {
@@ -65,24 +75,22 @@ function panel() {
       body: h('div', { class: 'stack' },
         !table.online && h('div', { class: 'notice warn' }, h('strong', null, 'Controlador sem resposta'), 'A liberação só acontece quando a mesa voltar a se conectar. Se tiver pressa, chame o atendente.'),
         table.ocupada && h('div', { class: 'notice info' }, h('strong', null, 'Compra em andamento'), 'Alguém já iniciou o pagamento desta mesa. Aguarde ou chame o atendente.')),
-      action: h('button', { class: 'btn primary block', onclick: startOrder, disabled: busy || table.ocupada }, busy ? 'Aguarde…' : `Pagar ${money(table.preco_centavos)} com Pix${hint}`),
+      action: h('button', { id: 'b-pay', class: 'btn primary block', onclick: startOrder, disabled: busy || table.ocupada }, busy ? 'Aguarde…' : `Pagar ${money(table.preco_centavos)} com Pix${hint}`),
     };
   }
   if (e === 'aguardando_pagamento') {
     return {
       status: hero('clock', '', 'Aguardando o pagamento', o.expira_em ? `Esta cobrança vale até ${new Date(o.expira_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}.` : ''),
       body: o.demo ? demoButtons() : h('div', { class: 'notice warn' }, h('strong', null, 'Pix indisponível'), 'O provedor de pagamentos ainda não está configurado neste servidor. Chame o atendente.'),
-      action: h('button', { class: 'btn ghost block', onclick: cancelOrder, disabled: busy }, 'Cancelar compra'),
+      action: h('button', { id: 'b-cancel', class: 'btn ghost block', onclick: cancelOrder, disabled: busy }, 'Cancelar compra'),
     };
   }
   if (e === 'processando') return { status: hero('spinner', '', 'Processando o pagamento', 'Aguarde. Não pague de novo.', true), body: o.demo && demoButtons() };
   if (e === 'aguardando_botao') {
     const received = o.comando === 'ENTREGUE';
     return {
-      status: hero('button', 'ok', 'Pagamento aprovado', received ? `Aperte o botão da mesa ${o.mesa} agora.` : `Enviando o crédito para a mesa ${o.mesa}…`),
-      body: h('div', { class: 'stack' },
-        h('div', { class: received ? 'notice ok' : 'notice' }, h('strong', null, received ? 'Mesa pronta' : 'Aguarde um instante'),
-          received ? 'O controlador recebeu o crédito. A liberação só conta depois que o botão for apertado.' : 'Ainda não foi liberado. Esta tela avisa quando a mesa receber o crédito.'),
+      status: hero('check', 'ok', 'Pagamento aprovado', received ? 'O crédito já está na mesa.' : 'O crédito está a caminho da mesa.'),
+      body: h('div', { class: 'stack' }, h('div', { class: 'card' }, pressBlock(received)),
         !o.controlador_online && h('div', { class: 'notice bad', role: 'alert' }, h('strong', null, 'Mesa sem conexão'), `Seu pagamento está registrado. Chame o atendente e informe o código ${short(o.pedido)}.`)),
     };
   }
@@ -93,7 +101,7 @@ function panel() {
       body: h('dl', { class: 'kv card' }, h('dt', null, 'Código'), h('dd', { class: 'mono' }, short(o.pedido)),
         h('dt', null, 'Valor'), h('dd', { class: 'num' }, o.origem === 'MANUAL' ? 'Cortesia' : money(o.valor_centavos)),
         h('dt', null, 'Liberada às'), h('dd', null, when(o.liberado_em)), o.demo && h('dt', null, 'Modo'), o.demo && h('dd', null, 'Demonstração')),
-      action: h('button', { class: 'btn block', onclick: restart }, 'Nova compra'),
+      action: h('button', { id: 'b-new', class: 'btn block', onclick: restart }, 'Nova compra'),
     };
   }
   if (e === 'analise') {
@@ -103,30 +111,48 @@ function panel() {
     };
   }
   const text = { recusado: ['Pagamento recusado', 'O banco não aprovou. Nada foi cobrado. Tente de novo ou use outro meio.'], cancelado: ['Compra cancelada', 'Nenhum valor foi cobrado.'], expirado: ['Cobrança expirada', 'O prazo para pagar acabou. Gere uma nova cobrança.'] }[e] || ['Compra encerrada', ''];
-  return { status: hero(e === 'recusado' ? 'x' : 'clock', e === 'recusado' ? 'bad' : '', text[0], text[1]), action: h('button', { class: 'btn primary block', onclick: restart }, 'Tentar de novo') };
+  return { status: hero(e === 'recusado' ? 'x' : 'clock', e === 'recusado' ? 'bad' : '', text[0], text[1]), action: h('button', { id: 'b-retry', class: 'btn primary block', onclick: restart }, 'Tentar de novo') };
 }
 
-function draw(force) {
-  if (!table) return;
-  const p = panel();
-  const steps = stepStates(order?.etapa);
-  const main = h('main', { id: 'main', class: 'shell narrow stack-lg' },
+function build() {
+  const stage = Stage.createStage();
+  stage.el.append(h('div', { class: 'stage-tag' }, h('span', { id: 'tag-cap' }), h('h1', { id: 'tt' }, table.nome)));
+  const price = h('p', { class: 'price num', id: 'price' });
+  const cap = h('p', { class: 'cap', id: 'cap' });
+  const steps = h('ol', { class: 'steps', 'aria-label': 'Etapas' }, STEPS.map(s => h('li', null, s)));
+  const host = h('div', { class: 'stack-lg', id: 'host' });
+  mount(h('main', { id: 'main', class: 'shell narrow stack' },
     h('header', { class: 'topbar' }, brand(table.estabelecimento), h('a', { class: 'small', href: '/' }, 'Outras mesas')),
-    table.demo && demoBanner(),
-    h('section', { class: 'table-hero stack', 'aria-labelledby': 'tt' },
-      h('p', { class: 'eyebrow' }, 'Pagamento da mesa'),
-      h('h1', { id: 'tt' }, table.nome),
-      h('p', { class: 'price' }, money(order ? order.valor_centavos || table.preco_centavos : table.preco_centavos)),
-      h('p', { class: 'muted small' }, order?.origem === 'MANUAL' ? 'Liberação autorizada pelo atendente' : '1 liberação de fichas')),
-    h('ol', { class: 'steps', 'aria-label': 'Etapas' }, STEPS.map((s, i) => h('li', { 'data-s': steps[i], 'aria-current': steps[i] === 'now' ? 'step' : null }, s))),
-    h('section', { class: 'card pad-lg stack', 'aria-live': 'polite', 'aria-atomic': 'true' }, p.status),
+    table.demo && h('p', { class: 'demo-pill', role: 'note' }, 'Demonstração: nenhum Pix real, nenhuma mesa física'),
+    stage.el,
+    h('section', { class: 'scoreboard', 'aria-label': 'Valor' }, h('div', null, h('p', { class: 'lbl' }, 'Valor'), cap), price),
+    steps, host,
+    h('footer', { class: 'foot' }, table.demo ? 'Demonstração local. Nada aqui movimenta dinheiro.' : 'Em caso de problema, chame o atendente.')));
+  ui = { stage, price, cap, steps, host, capTag: document.getElementById('tag-cap') };
+}
+
+function draw() {
+  if (!table) return;
+  if (!ui) build();
+  const p = panel();
+  const etapa = order?.etapa || 'none';
+  ui.capTag.textContent = CAPTION[etapa] || '';
+  ui.stage.set(order?.etapa, { animate: lastEtapa !== null });
+  lastEtapa = etapa;
+  ui.price.textContent = money(order ? order.valor_centavos || table.preco_centavos : table.preco_centavos);
+  ui.cap.textContent = order?.origem === 'MANUAL' ? 'Liberação autorizada pelo atendente' : '1 liberação de fichas';
+  stepStates(order?.etapa).forEach((s, i) => {
+    const li = ui.steps.children[i];
+    li.dataset.s = s;
+    if (s === 'now') li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current');
+  });
+  const activeId = document.activeElement?.id;
+  ui.host.replaceChildren(...[
+    h('section', { class: 'card pad-lg', 'aria-live': 'polite', 'aria-atomic': 'true' }, p.status),
     offline && h('div', { class: 'notice warn', role: 'status' }, 'Sem conexão com o servidor. Tentando de novo…'),
     error && h('p', { class: 'error-text', role: 'alert' }, error),
     p.body,
-    p.action && h('div', { class: order ? 'action' : 'sticky-action' }, p.action),
-    h('footer', { class: 'foot' }, table.demo ? 'Demonstração local. Nada aqui movimenta dinheiro.' : 'Em caso de problema, chame o atendente.'));
-  const activeId = document.activeElement?.id;
-  mount(main);
+    p.action && h('div', { class: order ? 'action' : 'sticky-action' }, p.action)].filter(Boolean));
   if (activeId) document.getElementById(activeId)?.focus();
 }
 

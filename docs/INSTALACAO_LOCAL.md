@@ -37,12 +37,12 @@ Dados em volume `mesafacil-data` (`/data`). Contêiner roda como usuário não r
 
 ## Firmware
 
-`python gerar_firmware.py --mesa 01 --servidor http://IP_DO_PC:8765` gera `privado/mesa_01_velxio.ino` com a credencial (arquivo ignorado pelo Git). Para mesas novas ou credenciais rotacionadas pelo painel: `--token <credencial exibida uma vez>`. O sketch v0.4 **não foi compilado neste ambiente** (sem toolchain Arduino/Velxio); a mudança em relação ao v0.3 é pequena (cabeçalho, `duracao_ms`, `POST incerto`) e precisa ser compilada e testada no Velxio/ESP32.
+`python gerar_firmware.py --mesa 01 --servidor http://IP_DO_PC:8765` gera `privado/mesa_01_velxio.ino` com a credencial (arquivo ignorado pelo Git). Para mesas novas ou credenciais rotacionadas pelo painel: `--token <credencial exibida uma vez>`. O sketch v0.4 foi **compilado pelo Velxio e executado no ESP32 emulado** (procedimento reproduzível em `docs/qa/INTEGRACAO_VELXIO.md`); **não** foi testado em ESP32 físico.
 
 ## Testes
 
 ```bash
 python -m unittest discover -s testes -v                 # backend/integração (34)
-cd qa && npm ci && npx playwright install chromium && npm test   # visual + axe + E2E (109)
+cd qa && npm ci && npx playwright install chromium && npm test   # visual + axe + E2E + animação (118)
 python -m ruff check . && python -m bandit -q -r mesafacil app.py
 ```

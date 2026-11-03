@@ -240,12 +240,12 @@ def r_qr(c):
     url = f'{settings.public_base_url}/mesa/{mesa}'
     if fmt == 'svg':
         import qrcode.image.svg
-        img = qrcode.make(url, image_factory=qrcode.image.svg.SvgPathImage, border=2)
+        img = qrcode.make(url, image_factory=qrcode.image.svg.SvgPathImage, border=4)
         out = BytesIO()
         img.save(out)
         return 200, ('file', out.getvalue(), 'image/svg+xml', None)
     out = BytesIO()
-    qrcode.make(url, border=2).save(out, format='PNG')
+    qrcode.make(url, border=4).save(out, format='PNG')
     return 200, ('file', out.getvalue(), 'image/png', None)
 
 

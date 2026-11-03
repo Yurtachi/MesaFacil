@@ -135,7 +135,7 @@ function header() {
 function tableCard(t) {
   const [label, tone] = ORDER[t.estado] || [t.estado, 'idle'];
   return h('article', { class: 'card tcard' + (t.ativa ? '' : ' inactive'), 'aria-label': t.nome },
-    h('div', { class: 'head' }, h('div', { class: 'name' }, t.nome), h('span', { class: `badge ${t.ativa ? tone : 'idle'}` }, t.ativa ? label : 'Inativa')),
+    h('div', { class: 'head' }, h('div', { class: 'who' }, Art.ball(((Number(t.id) - 1) % 15) + 1, 36), h('div', { class: 'name' }, t.nome)), h('span', { class: `badge ${t.ativa ? tone : 'idle'}` }, t.ativa ? label : 'Inativa')),
     h('div', { class: 'small muted' },
       h('div', { class: 'row' }, h('span', { class: 'dot ' + (t.online ? 'on' : 'off'), role: 'img', 'aria-label': t.online ? 'online' : 'offline' }), t.online ? 'Controlador online' : `Controlador offline · visto ${ago(t.visto_em)}`),
       h('div', null, `Preço ${money(t.preco_efetivo_centavos)}${t.preco_centavos ? '' : ' (padrão)'}`),
