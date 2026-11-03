@@ -1,6 +1,18 @@
+# segredos e dados operacionais: nunca versionar
+.env
 *.sqlite3
 *.sqlite3-*
 device_keys.json
 privado/
+backups/
+# python
 __pycache__/
+*.pyc
 .pytest_cache/
+.ruff_cache/
+.venv/
+# QA
+qa/node_modules/
+qa/.tmp/
+qa/test-results/
+qa/playwright-report/

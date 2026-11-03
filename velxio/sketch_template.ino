@@ -1,5 +1,5 @@
 /*
- MesaFacil Local v0.3 - APENAS demonstracao, sem pagamentos reais ou rele fisico.
+ MesaFacil Local v0.4 - APENAS demonstracao, sem pagamentos reais ou rele fisico.
  ESP32 DevKit V1 Velxio: botao GPIO27 -> GND, LED com resistor GPIO2 -> GND.
  GPIO26 = pulso de comando em nivel BAIXO (validar interface real ANTES de conectar).
  Uma tentativa por pagamento; ID persistido antes do pulso, ACK apos o pulso.
@@ -70,13 +70,29 @@ void sendAck(const String &id) {
   if (!http.begin(url)) { Serial.println("ACK: erro iniciando HTTP"); return; }
   http.addHeader("Content-Type", "application/json");
   http.addHeader("Authorization", String("Bearer ") + DEVICE_TOKEN);
-  int code = http.POST(String("{\"comando\":\"") + id + "\"}");
+  http.addHeader("X-Firmware", "mesafacil-0.4");
+  int code = http.POST(String("{\"comando\":\"") + id + "\",\"duracao_ms\":" + String(PULSE_MS) + "}");
   http.end();
   Serial.printf("ACK: HTTP %d\n", code);
   if (code == 200) {
     ackPending = "";
     Serial.println("Mesa liberada confirmada no painel.");
   }
+}
+
+// Estado incerto: informa o backend UMA vez; ele para de oferecer o comando e exige decisao do operador.
+void reportUncertain(const String &id) {
+  static String reported = "";
+  if (reported == id || WiFi.status() != WL_CONNECTED) return;
+  HTTPClient http;
+  http.setTimeout(3000);
+  String url = String(SERVER) + "/api/dispositivos/" + MESA + "/incerto";
+  if (!http.begin(url)) return;
+  http.addHeader("Content-Type", "application/json");
+  http.addHeader("Authorization", String("Bearer ") + DEVICE_TOKEN);
+  int code = http.POST(String("{\"comando\":\"") + id + "\"}");
+  http.end();
+  if (code == 200) reported = id;
 }
 
 void pollServer() {
@@ -88,6 +104,7 @@ void pollServer() {
   String url = String(SERVER) + "/api/dispositivos/" + MESA + "/proximo.txt";
   if (!http.begin(url)) { Serial.println("POLL: falha de configuracao HTTP"); return; }
   http.addHeader("Authorization", String("Bearer ") + DEVICE_TOKEN);
+  http.addHeader("X-Firmware", "mesafacil-0.4");
   int status = http.GET();
   String cmd = (status == 200) ? http.getString() : "";
   http.end();
@@ -104,6 +121,7 @@ void pollServer() {
   if (cmd == lastStarted) {
     // Crash antes de completar o ciclo. Falha segura: jamais repetir o pulso automaticamente.
     Serial.println("ATENCAO: ESTADO INCERTO, verificar manualmente antes de nova autorizacao.");
+    reportUncertain(cmd);
     return;
   }
   pendingCommand = cmd;
@@ -139,7 +157,7 @@ void setup() {
   lastStarted = prefs.getString("started", "");
   lastDone = prefs.getString("done", "");
   lastButtonLevel = digitalRead(PIN_BUTTON);
-  Serial.printf("MesaFacil v0.3, mesa %s - SOMENTE SIMULACAO\n", MESA);
+  Serial.printf("MesaFacil v0.4, mesa %s - SOMENTE SIMULACAO\n", MESA);
   Serial.printf("Servidor: %s\n", SERVER);
   Serial.println("Conectando ao WiFi do Velxio...");
   WiFi.mode(WIFI_STA);

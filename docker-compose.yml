@@ -1,0 +1,15 @@
+services:
+  mesafacil:
+    build: .
+    ports:
+      - "8765:8765"   # exponha só na rede local; nunca direto à internet
+    env_file: .env
+    environment:
+      HOST: 0.0.0.0
+      SINUCA_DB: /data/mesafacil.sqlite3
+      SINUCA_KEYS: /data/device_keys.json
+    volumes:
+      - mesafacil-data:/data
+    restart: unless-stopped
+volumes:
+  mesafacil-data:

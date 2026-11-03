@@ -11,7 +11,7 @@ import time
 import unittest
 import warnings
 
-from helpers import ADMIN_PASSWORD, WEBHOOK_SECRET, Client, FakeDevice, Server
+from helpers import WEBHOOK_SECRET, Client, FakeDevice, Server
 
 warnings.simplefilter('ignore', ResourceWarning)
 

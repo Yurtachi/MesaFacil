@@ -165,6 +165,13 @@ def r_logout(c):
     return 200, {'ok': True}
 
 
+@add('GET', r'/api/admin/estado', 'public')
+def r_state(c):
+    """Sondagem sem erro 401 no console: informa se ha sessao valida (e o token CSRF dela)."""
+    sess = security.sessions.get(c.h.session_id())
+    return 200, ({'autenticado': True, 'csrf': sess['csrf']} if sess else {'autenticado': False})
+
+
 @add('GET', r'/api/admin/sessao', 'admin')
 def r_session(c):
     return 200, {'csrf': c.h.session['csrf'], 'estabelecimento': service.public_config()['estabelecimento']}
@@ -308,7 +315,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def static(self, path):
         data = path.read_bytes()
-        etag = '"' + hashlib.sha1(data).hexdigest()[:16] + '"'
+        etag = '"' + hashlib.sha256(data).hexdigest()[:16] + '"'
         if self.headers.get('If-None-Match') == etag:
             self.send_response(304)
             self.send_header('ETag', etag)

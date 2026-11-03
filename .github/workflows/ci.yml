@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt ruff bandit pip-audit
+      - name: Lint (ruff)
+        run: python -m ruff check .
+      - name: Análise estática de segurança (bandit)
+        run: python -m bandit -q -r mesafacil app.py
+      - name: Auditoria de dependências
+        run: python -m pip_audit -r requirements.txt
+      - name: Testes de backend e integração
+        run: python -W ignore -m unittest discover -s testes -v
+      - name: Sintaxe do JavaScript
+        run: for f in web/assets/*.js; do node --check "$f"; done
+
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: qa/package-lock.json
+      - name: Instalar Playwright
+        working-directory: qa
+        run: npm ci && npx playwright install --with-deps chromium
+      - name: E2E, visual (6 larguras) e acessibilidade (axe)
+        working-directory: qa
+        env:
+          PYTHON: python
+        run: npm test
+      - name: Auditoria npm (ferramentas de QA)
+        working-directory: qa
+        run: npm audit --audit-level=high
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qa-screenshots
+          path: docs/qa/screenshots
+          retention-days: 14
+
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t mesafacil:ci .
+      - name: Health check do container
+        run: |
+          docker run -d --name mf -p 8765:8765 -e ADMIN_PASSWORD=ci-senha-123 mesafacil:ci
+          for i in $(seq 1 20); do curl -fsS localhost:8765/api/health && exit 0; sleep 1; done
+          docker logs mf; exit 1

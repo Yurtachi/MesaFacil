@@ -64,7 +64,7 @@ async function api(path, body, opts = {}) {
 }
 
 function brand(subtitle, href = '/') {
-  return h('a', { class: 'brand', href, 'aria-label': 'MesaFácil, início' },
+  return h('a', { class: 'brand', href },
     h('img', { class: 'brand-mark', src: '/assets/favicon.svg', alt: '', width: 36, height: 36 }),
     h('span', null, h('b', null, 'MesaFácil'), h('small', null, subtitle)));
 }

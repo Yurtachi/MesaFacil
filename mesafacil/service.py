@@ -15,7 +15,6 @@ import sqlite3
 import uuid
 from datetime import datetime, timedelta, timezone
 
-from . import db
 from .config import settings
 from .db import connect, now, read, hash_token
 
@@ -124,7 +123,7 @@ def public_config():
 def public_tables():
     with read() as conn:
         rows = conn.execute('SELECT * FROM mesas WHERE ativa=1 ORDER BY id').fetchall()
-        busy = {r['mesa'] for r in conn.execute(f"SELECT mesa FROM pedidos WHERE status IN {OPEN}")}
+        busy = {r['mesa'] for r in conn.execute(f"SELECT mesa FROM pedidos WHERE status IN {OPEN}")}  # nosec B608 - OPEN e constante do modulo, sem entrada do usuario
         return [{'id': r['id'], 'nome': r['nome'], 'ocupada': r['id'] in busy, 'online': _online(r)} for r in rows]
 
 
@@ -133,7 +132,7 @@ def public_table(mesa):
         r = conn.execute('SELECT * FROM mesas WHERE id=?', (mesa,)).fetchone()
         if not r or not r['ativa']:
             raise NotFound('Mesa não encontrada ou indisponível')
-        busy = conn.execute(f"SELECT 1 FROM pedidos WHERE mesa=? AND status IN {OPEN}", (mesa,)).fetchone()
+        busy = conn.execute(f"SELECT 1 FROM pedidos WHERE mesa=? AND status IN {OPEN}", (mesa,)).fetchone()  # nosec B608 - OPEN e constante do modulo, sem entrada do usuario
         return {'id': r['id'], 'nome': r['nome'], 'ocupada': bool(busy), 'online': _online(r),
                 'preco_centavos': _price(conn, r), 'estabelecimento': _establishment(conn),
                 'demo': settings.demo, 'modo_pagamento': settings.payment_mode}
@@ -173,7 +172,7 @@ def create_order(mesa):
             raise NotFound('Mesa não encontrada ou indisponível')
         if settings.require_device_online and not _online(m):
             raise Unavailable('O controlador desta mesa está sem conexão. Chame o atendente.')
-        if conn.execute(f"SELECT 1 FROM pedidos WHERE mesa=? AND status IN {OPEN}", (mesa,)).fetchone():
+        if conn.execute(f"SELECT 1 FROM pedidos WHERE mesa=? AND status IN {OPEN}", (mesa,)).fetchone():  # nosec B608 - OPEN e constante do modulo, sem entrada do usuario
             raise Conflict('Já existe uma compra em andamento nesta mesa')
         oid = str(uuid.uuid4())
         conn.execute('INSERT INTO pedidos(id,mesa,valor_centavos,status,origem,provider_txid,criado_em,expira_em) VALUES(?,?,?,?,?,?,?,?)',
@@ -360,7 +359,7 @@ def admin_summary():
     with connect() as conn:  # connect: roda _expire e garante leitura consistente
         _expire(conn)
         mesas = conn.execute('SELECT * FROM mesas ORDER BY id').fetchall()
-        open_orders = {r['mesa']: r for r in conn.execute(f"SELECT * FROM pedidos WHERE status IN {OPEN}")}
+        open_orders = {r['mesa']: r for r in conn.execute(f"SELECT * FROM pedidos WHERE status IN {OPEN}")}  # nosec B608 - OPEN e constante do modulo, sem entrada do usuario
         last_cmd = {}
         for r in conn.execute('SELECT * FROM comandos ORDER BY criado_em, rowid'):
             last_cmd[r['mesa']] = r
@@ -432,7 +431,7 @@ def admin_update_table(actor, ip, mesa, data):
             if not isinstance(data['ativa'], bool):
                 raise Invalid('Campo ativa deve ser booleano')
             ativa = int(data['ativa'])
-            if not ativa and conn.execute(f"SELECT 1 FROM pedidos WHERE mesa=? AND status IN {OPEN}", (mesa,)).fetchone():
+            if not ativa and conn.execute(f"SELECT 1 FROM pedidos WHERE mesa=? AND status IN {OPEN}", (mesa,)).fetchone():  # nosec B608 - OPEN e constante do modulo, sem entrada do usuario
                 raise Conflict('Mesa tem cobrança em andamento')
         conn.execute('UPDATE mesas SET nome=?, preco_centavos=?, ativa=? WHERE id=?', (nome, preco, ativa, mesa))
         audit(conn, actor, 'MESA_ATUALIZADA', mesa, f'nome={nome} preco={preco} ativa={ativa}', ip)
@@ -472,7 +471,7 @@ def admin_manual_release(actor, ip, mesa, motivo):
         m = conn.execute('SELECT * FROM mesas WHERE id=?', (mesa,)).fetchone()
         if not m or not m['ativa']:
             raise NotFound('Mesa não encontrada ou inativa')
-        if conn.execute(f"SELECT 1 FROM pedidos WHERE mesa=? AND status IN {OPEN}", (mesa,)).fetchone():
+        if conn.execute(f"SELECT 1 FROM pedidos WHERE mesa=? AND status IN {OPEN}", (mesa,)).fetchone():  # nosec B608 - OPEN e constante do modulo, sem entrada do usuario
             raise Conflict('Mesa tem cobrança em andamento: resolva-a antes')
         oid = str(uuid.uuid4())
         conn.execute('INSERT INTO pedidos(id,mesa,valor_centavos,status,origem,criado_em,pago_em) VALUES(?,?,0,?,?,?,?)',

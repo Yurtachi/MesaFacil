@@ -233,7 +233,8 @@ async function start() {
 
 (async () => {
   try {
-    const s = await api('/api/admin/sessao');
+    const s = await api('/api/admin/estado');
+    if (!s.autenticado) return loginView();
     csrf = s.csrf;
     await start();
   } catch (e) { loginView(); }

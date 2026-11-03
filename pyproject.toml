@@ -1,0 +1,13 @@
+[tool.ruff]
+line-length = 170
+target-version = "py310"
+extend-exclude = ["qa", "privado"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "B", "S"]
+ignore = ["S101", "S608", "B904", "E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"testes/*" = ["S310", "B017", "E701", "E702", "S105", "S106", "S108", "B011", "S603"]
+"sim_esp32.py" = ["S310"]
+"mesafacil/server.py" = ["S104"]

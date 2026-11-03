@@ -1,0 +1,62 @@
+{
+ "admin-desktop": {
+  "performance": 100,
+  "accessibility": 100,
+  "bestPractices": 100,
+  "LCP": "0.3 s",
+  "CLS": "0",
+  "TBT": "0 ms",
+  "peso": "Total size was 67 KiB",
+  "lighthouse": "13.6.0"
+ },
+ "admin-mobile": {
+  "performance": 100,
+  "accessibility": 100,
+  "bestPractices": 100,
+  "LCP": "1.1 s",
+  "CLS": "0",
+  "TBT": "10 ms",
+  "peso": "Total size was 67 KiB",
+  "lighthouse": "13.6.0"
+ },
+ "home-desktop": {
+  "performance": 100,
+  "accessibility": 100,
+  "bestPractices": 100,
+  "LCP": "0.2 s",
+  "CLS": "0",
+  "TBT": "0 ms",
+  "peso": "Total size was 52 KiB",
+  "lighthouse": "13.6.0"
+ },
+ "home-mobile": {
+  "performance": 100,
+  "accessibility": 100,
+  "bestPractices": 100,
+  "LCP": "0.9 s",
+  "CLS": "0",
+  "TBT": "0 ms",
+  "peso": "Total size was 52 KiB",
+  "lighthouse": "13.6.0"
+ },
+ "mesa-desktop": {
+  "performance": 100,
+  "accessibility": 100,
+  "bestPractices": 100,
+  "LCP": "0.3 s",
+  "CLS": "0",
+  "TBT": "0 ms",
+  "peso": "Total size was 59 KiB",
+  "lighthouse": "13.6.0"
+ },
+ "mesa-mobile": {
+  "performance": 100,
+  "accessibility": 100,
+  "bestPractices": 100,
+  "LCP": "0.9 s",
+  "CLS": "0",
+  "TBT": "0 ms",
+  "peso": "Total size was 59 KiB",
+  "lighthouse": "13.6.0"
+ }
+}

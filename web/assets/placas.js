@@ -1,7 +1,8 @@
 'use strict';
 /* Impressão dos QR codes permanentes. Exige sessão de atendente. */
 (async () => {
-  try { await api('/api/admin/sessao'); } catch { return location.replace('/admin'); }
+  const st = await api('/api/admin/estado').catch(() => ({}));
+  if (!st.autenticado) return location.replace('/admin');
   const [cfg, list] = await Promise.all([api('/api/config'), api('/api/mesas')]);
   mount(h('main', { id: 'main', class: 'shell stack-lg' },
     h('header', { class: 'topbar no-print' }, brand('QR codes', '/admin'), h('a', { class: 'small', href: '/admin' }, 'Voltar ao painel')),

@@ -6,7 +6,6 @@ import getpass
 import sys
 
 from mesafacil import db, security
-from mesafacil.config import settings
 from mesafacil.server import serve
 
 if __name__ == '__main__':

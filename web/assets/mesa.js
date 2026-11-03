@@ -123,7 +123,7 @@ function draw(force) {
     offline && h('div', { class: 'notice warn', role: 'status' }, 'Sem conexão com o servidor. Tentando de novo…'),
     error && h('p', { class: 'error-text', role: 'alert' }, error),
     p.body,
-    p.action && h('div', { class: 'sticky-action' }, p.action),
+    p.action && h('div', { class: order ? 'action' : 'sticky-action' }, p.action),
     h('footer', { class: 'foot' }, table.demo ? 'Demonstração local. Nada aqui movimenta dinheiro.' : 'Em caso de problema, chame o atendente.'));
   const activeId = document.activeElement?.id;
   mount(main);
