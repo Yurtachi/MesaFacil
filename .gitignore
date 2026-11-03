@@ -16,3 +16,7 @@ qa/node_modules/
 qa/.tmp/
 qa/test-results/
 qa/playwright-report/
+
+# capturas de 360/1024 px sao geradas pelo QA (artifact do CI); o repositorio guarda 320/390/768/1440
+docs/qa/screenshots/v2/w360/
+docs/qa/screenshots/v2/w1024/

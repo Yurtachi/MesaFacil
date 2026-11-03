@@ -63,3 +63,29 @@ Lidos: `agent-skills/ui/design-first-ui-prompting`, `codex/audit-verify-explain-
 
 ## Fontes complementares
 `vercel-labs/agent-skills`, `anthropics/skills`, `elayadesign/redesign-skill`: **não consultadas** — as quatro fontes obrigatórias cobriram as necessidades; evitei dependências sem ganho demonstrado. Ferramentas de QA recomendadas pelo pedido **usadas**: Playwright, axe-core, Lighthouse, ruff, bandit, pip-audit, npm audit, CodeQL (workflow).
+
+
+---
+
+# Rodada 2 (redesign v2) — o que foi efetivamente usado
+
+A rodada 1 seguiu as skills de forma conservadora (minimalismo, fundo chapado). Nesta rodada o pedido foi criatividade e movimento, então as skills foram usadas como **restrições de qualidade** (performance, causalidade, acessibilidade), não como limite estético. Leitura de arquivos longos delegada a um subagente (Haiku) com citações; decisões e verificação feitas depois no código/testes. Notas completas ficaram fora do repositório (pasta de referência local). Commits consultados: garden `2b9a89340b70`, emil `f1090bec2771`, ai-design-skills `456d9e0d3e2d`, mengto `e0e38f7bd3b1`.
+
+| Fonte / arquivo lido | Regra citada | Aplicação nesta rodada | Evidência |
+|---|---|---|---|
+| garden `web-design-engineer/references/design-directions.md` | Não nomear a direção "minimalista/moderna"; ancorar em referência nomeada; evitar fontes padrão | Direção nomeada "Salão de bilhar" com 4 alternativas avaliadas; display font esportiva (Big Shoulders) em vez de Inter/Roboto | `docs/design/DIRECAO_VISUAL.md` |
+| garden `design-calibration.md` (5 dials) | Motion 3–4 para checkout; "Accessibility constraints override aesthetic scores" | Movimento rico só em eventos raros (aprovação, conclusão, abertura); admin sem animação; reduced-motion obrigatório | `ANIMACOES.md` |
+| garden `failure-patterns.md` | "Motion for spectacle only"; "CSS as counterfeit asset"; sem trust theater | Cada animação comunica estado; a mesa é a superfície de estado (não decoração); nenhum selo falso | testes de causalidade em `animacao.spec.js` |
+| emil `animate`, `improve-animations`, `animation-performance` | Só `transform`/`opacity`; UI <300 ms; nunca `ease-in`; interromper a partir do valor atual | WAAPI com `transform`/`opacity`; curvas de desaceleração; cancelamento e pose final ao interromper; o golpe do taco (110 ms, acelerado) é exceção física documentada | `stage.js`, teste de interrupção |
+| emil `find-animation-opportunities` | No máximo 5–7 sugestões; "delight" só em momentos raros | 3 sequências temáticas (abertura, aprovação, conclusão) + feedback mínimo; resto sem movimento | tabela em `ANIMACOES.md` |
+| emil `mobile-native` | `dvh`, safe-area, hover só com ponteiro fino, testar paisagem | CTA fixo com `env(safe-area-inset-bottom)`; teste paisagem 844×390 | `animacao.spec.js` |
+| emil `break-ui` | Dados hostis, limites, escapar no render | Nome de mesa `<img onerror>` exibido como texto em admin/home/checkout | `flow.spec.js` (XSS) |
+| mengto `optimize-web-animations` | Cancelar loops; verificar contagem de animações em execução | Sem laços rAF próprios; `getAnimations()` = 0 após a sequência; aba oculta → pose final | `animacao.spec.js` |
+| mengto `no-ai-design-slop` / `audit-ai-design-slop` | "Motion theater": movimento que atrasa acesso, repete mecanicamente ou bloqueia entrada | Animações não bloqueiam cliques (teste), uma vez por sessão (home), finitas | teste da home |
+| mengto `animation-systems`, `skeuomorphic-ui` | Hero até ~1600 ms; um material por componente; luz do topo | Abertura ≈2,2 s não bloqueante; madeira/feltro/latão como materiais; sombras estáticas | `app.css` |
+| ai-design-skills `landing-page-design` | Uma família de display, hierarquia, estados (loading/erro/disabled), microcopy sem exclamação | Big Shoulders + Manrope; todos os estados do checkout cobertos | capturas `v2/` |
+| mengto `workflow-progress-screenshots`, `score-to-target` | Capturas reais, olhar cada imagem, notas ancoradas | Capturas inspecionadas (defeitos em `REDESIGN_V2.md`) | `docs/qa/screenshots/v2/` |
+
+**Conflitos resolvidos:** mengto manda `ease-in` na saída e emil proíbe `ease-in` em UI → seguido emil, exceto o golpe do taco. garden/emil pedem contenção; o usuário pediu identidade marcante → paleta própria de bilhar, movimento contido a eventos de estado.
+
+Fontes complementares desta rodada: pesquisa de licenças (Kenney, Phosphor, Lucide, Motion) e projetos MIT de bilhar, registrada em `docs/design/ASSETS_E_LICENCAS.md`; **nenhuma foi incorporada**.

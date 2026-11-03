@@ -6,11 +6,12 @@ Pagamento por QR code e liberação de mesas de sinuca. Cada mesa tem um QR fixo
 
 ## O que tem
 
+- **Identidade "Salão de bilhar" (v2)**: mesas vistas de cima, bolas numeradas, placar, madeira e latão; tacada, bola rolando e bola na caçapa como animações de estado (a caçapa só depois do acionamento **confirmado**). Ver `docs/design/`.
 - **Cliente (mobile first)**: `/mesa/NN` — preço em reais, etapas (Pagamento → Crédito na mesa → Mesa liberada), estados claros para aprovado, recusado, processando, em análise e falha; "liberada" só aparece quando o controlador **reporta** o acionamento concluído.
 - **Atendente** (`/admin`, com login): situação das mesas e controladores (online/offline), pendências, histórico, auditoria, cadastro/edição de mesas e preços, rotação de credenciais, liberação manual com motivo, QR codes para imprimir, backup.
 - **Backend** Python (biblioteca padrão) + SQLite. Crédito por pagamento é único e idempotente; estados separados de comando recebido / iniciado / concluído / incerto; expiração; auditoria.
 - **Firmware** ESP32 (`velxio/sketch_template.ino` v0.4, não compilado neste ambiente) e simulador em Python.
-- **QA**: 34 testes de backend, 109 de navegador (6 larguras, axe, E2E), Lighthouse, ruff, bandit, pip-audit, CI no GitHub Actions.
+- **QA**: 34 testes de backend, 118 de navegador (6 larguras, axe, E2E, animação), Lighthouse, ruff, bandit, pip-audit, CI no GitHub Actions.
 
 ## Início rápido (Windows ou Linux)
 
@@ -28,7 +29,8 @@ Abra `http://127.0.0.1:8765/` e `http://127.0.0.1:8765/admin`. Em `/mesa/01`, pa
 | [INSTALACAO_LOCAL](docs/INSTALACAO_LOCAL.md) | Windows, Docker, firmware, testes |
 | [OPERACAO](docs/OPERACAO.md) | uso diário, pendências, backup/restauração |
 | [CUSTOS_E_OPERACAO](docs/CUSTOS_E_OPERACAO.md) | custos e alternativas |
-| `docs/qa/` | auditoria inicial, skills aplicadas, testes funcionais e visuais, segurança, relatório final |
+| [design/](docs/design/DIRECAO_VISUAL.md) | direção visual, assets e licenças |
+| `docs/qa/` | auditoria, skills, testes funcionais/visuais, animações, redesign v2, integração Velxio, segurança, relatórios finais |
 
 ## Limitações
 

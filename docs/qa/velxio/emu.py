@@ -118,7 +118,7 @@ class Emu(_Base):
             pass
 
 
-WORKER_COPY = '/tmp/esp32_worker_persist.py'
+WORKER_COPY = '/tmp/svc/esp32_worker_persist.py'
 FLASH_FILE = '/tmp/mesafacil_flash.bin'
 
 
@@ -137,6 +137,8 @@ class EmuPersist(_Base):
         if fresh_flash:
             subprocess.run(['docker', 'exec', 'velxio', 'rm', '-f', FLASH_FILE], check=False)
         self.t0 = time.time()
+        with self.lock:
+            self.gpio = []      # contagem de pulsos por partida
         self.crash_armed = False
         if self.helper is None or self.helper.poll() is not None:   # shell ja aberto: pkill sem latencia de 'docker exec'
             self.helper = subprocess.Popen(['docker', 'exec', '-i', 'velxio', 'sh'], stdin=subprocess.PIPE,
