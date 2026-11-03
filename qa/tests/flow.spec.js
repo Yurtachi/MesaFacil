@@ -38,14 +38,15 @@ test('cliente: pagamento recusado permite tentar de novo', async ({ page }, info
   await expect(page.getByRole('button', { name: /Pagar/ })).toBeVisible();
 });
 
-test('sem rolagem horizontal ao dar zoom 200% e teclado navega o checkout', async ({ page }, info) => {
+test('teclado: skip link primeiro e Tab alcança o botão principal do checkout', async ({ page }, info) => {
   test.skip(info.project.name !== 'w390');
   await page.goto('/mesa/07');
+  const cta = page.getByRole('button', { name: /Pagar/ });
+  await expect(cta).toBeVisible(); // espera a tela montar antes de tabular (evita corrida em CI)
   await page.keyboard.press('Tab');
   await expect(page.locator('.skip')).toBeFocused();
-  for (let i = 0; i < 3; i++) await page.keyboard.press('Tab');
-  const focused = await page.evaluate(() => document.activeElement.tagName);
-  expect(['A', 'BUTTON']).toContain(focused);
+  for (let i = 0; i < 8 && !(await cta.evaluate(el => el === document.activeElement)); i++) await page.keyboard.press('Tab');
+  await expect(cta).toBeFocused();
 });
 
 test('conteudo hostil e escapado (XSS) no painel e na home', async ({ page, browser }, info) => {
