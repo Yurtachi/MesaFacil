@@ -197,7 +197,7 @@ for _ in range(3):
     time.sleep(1.5)
 time.sleep(6)
 log('pulsos apos o reinicio (3 cliques + 10 s de polling):', len(p.pulses()) - n_pre)
-st, issues = 200, adm.resumo()
+st, issues = 200, api.Admin().resumo()
 log('admin /api/admin/resumo pendencias EM_ANALISE:', [(i['id'][:8], i['mesa'], i['status'], i['comando']) for i in issues.get('pendencias', issues.get('issues', []))] if isinstance(issues, dict) else issues)
 log('chaves do resumo:', list(issues.keys()) if isinstance(issues, dict) else '')
 log.block('Serial T5 apos reinicio', p.text_since(m))
@@ -206,7 +206,7 @@ result['T5'] = 'PASS' if (inc and len(p.pulses()) == n_pre and t5_status == ('EM
 log('T5 estado final:', t5_status)
 
 log('\n--- T5 epilogo: operador resolve (reabrir) -> novo credito legitimo ---')
-st, r = adm.post(f'/api/admin/pedidos/{oid5}/resolver', {'acao': 'reabrir', 'motivo': 'QA Velxio: conferido, reabrir credito'})
+st, r = api.Admin().post(f'/api/admin/pedidos/{oid5}/resolver', {'acao': 'reabrir', 'motivo': 'QA Velxio: conferido, reabrir credito'})
 log('POST /api/admin/pedidos/<id>/resolver reabrir -> HTTP', st, r)
 m = p.mark()
 n_pre = len(p.pulses())

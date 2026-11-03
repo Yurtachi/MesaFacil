@@ -1,0 +1,206 @@
+##### PARTE S - Velxio padrao #####
+
+===== T4 reinicio (parar/iniciar simulacao) ANTES do acionamento =====
+pedido 73f27921.. criado e pago (demo): HTTP 200 PAGO
+antes do reinicio: pedido=PAGO comandos=['ENTREGUE']
+simulacao PARADA. backend: pedido=PAGO comandos=['ENTREGUE'] (comando ENTREGUE nao foi acionado)
+apos reiniciar o firmware voltou a receber o comando (mesmo credito): True | pulsos desde o reinicio ate aqui: 0
+sem apertar o botao: pulsos = 0
+apos 1 clique: pedido=LIBERADO comandos=['EXECUTADO'] | pulsos totais na nova partida: 1
+--- Serial T4 (apos reinicio) ---
+ets Jul 29 2019 12:21:46
+rst:0x1 (POWERON_RESET),boot:0x12 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:1396
+load:0x40078000,len:13700
+load:0x40080400,len:3008
+entry 0x40080574
+[   235][E][Preferences.cpp:506] getString(): nvs_get_str len fail: started NOT_FOUND
+[   250][E][Preferences.cpp:506] getString(): nvs_get_str len fail: done NOT_FOUND
+MesaFacil v0.4, mesa 01 - SOMENTE SIMULACAO
+Servidor: http://host.docker.internal:8777
+Conectando ao WiFi do Velxio...
+W (6912) phy_init: failed to load RF calibration data (0x1102), falling back to full calibration
+WiFi conectado: 192.168.4.15, gateway 192.168.4.2
+Mesa 01: pagamento de TESTE confirmado. Pressione o botao.
+FICHAS LIBERADAS (simuladas): iniciando pulso 350ms.
+Saida desligada: 350 ms encerrados.
+ACK: HTTP 200
+Mesa liberada confirmada no painel.
+--- fim ---
+segundo clique: pulsos totais = 1
+
+===== T9 (parte Velxio padrao): NVS apos reiniciar depois de um ciclo COMPLETO =====
+--- boot apos parar/iniciar (ciclo anterior completo) ---
+ets Jul 29 2019 12:21:46
+rst:0x1 (POWERON_RESET),boot:0x12 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:1396
+load:0x40078000,len:13700
+load:0x40080400,len:3008
+entry 0x40080574
+[   242][E][Preferences.cpp:506] getString(): nvs_get_str len fail: started NOT_FOUND
+[   256][E][Preferences.cpp:506] getString(): nvs_get_str len fail: done NOT_FOUND
+MesaFacil v0.4, mesa 01 - SOMENTE SIMULACAO
+Servidor: http://host.docker.internal:8777
+Conectando ao WiFi do Velxio...
+W (6518) phy_init: failed to load RF calibration data (0x1102), falling back to full calibration
+W (7074) 
+--- fim ---
+Velxio padrao: NVS apagada ao reiniciar (chaves started/done NOT_FOUND): True
+
+##### PARTE P - flash persistente (copia do worker no container) #####
+
+===== T4b reinicio antes do acionamento (NVS persistente) =====
+pedido a64233ee.. criado e pago (demo): HTTP 200 PAGO
+apos reinicio: credito reapresentado = True | NVS vazia?  True
+pulsos apos reinicio+2 cliques: 1 | pedido=LIBERADO comandos=['EXECUTADO']
+--- Serial T4b ---
+ets Jul 29 2019 12:21:46
+rst:0x1 (POWERON_RESET),boot:0x12 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:1396
+load:0x40078000,len:13700
+load:0x40080400,len:3008
+entry 0x40080574
+[   302][E][Preferences.cpp:506] getString(): nvs_get_str len fail: started NOT_FOUND
+[   318][E][Preferences.cpp:506] getString(): nvs_get_str len fail: done NOT_FOUND
+MesaFacil v0.4, mesa 01 - SOMENTE SIMULACAO
+Servidor: http://host.docker.internal:8777
+Conectando ao WiFi do Velxio...
+WiFi conectado: 192.168.4.15, gateway 192.168.4.2
+Mesa 01: pagamento de TESTE confirmado. Pressione o botao.
+FICHAS LIBERADAS (simuladas): iniciando pulso 350ms.
+Saida desligada: 350 ms encerrados.
+ACK: HTTP 200
+Mesa liberada confirmada no painel.
+BOTAO: sem credito liberado; nenhuma acao.
+--- fim ---
+
+===== T9 (flash persistente): chaves started/done sobrevivem =====
+--- boot apos ciclo completo, flash preservada ---
+ets Jul 29 2019 12:21:46
+rst:0x1 (POWERON_RESET),boot:0x12 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:1396
+load:0x40078000,len:13700
+load:0x40080400,len:3008
+entry 0x40080574
+MesaFacil v0.4, mesa 01 - SOMENTE SIMULACAO
+Servidor: http://host.docker.internal:8777
+Conectando ao WiFi do Velxio...
+W (7097) per
+--- fim ---
+chaves started/done lidas sem NOT_FOUND: True
+
+===== T9b ACK perdido + reinicio: ramo "done" =====
+pedido 48ebd1f9.. criado e pago (demo): HTTP 200 PAGO
+backend PARADO antes do clique (credito ja entregue ao firmware)
+firmware persistiu "done" (pulso feito) e nao consegue enviar ACK; pulsos nesta partida: 1
+--- Serial T9b antes do reinicio ---
+ets Jul 29 2019 12:21:46
+rst:0x1 (POWERON_RESET),boot:0x12 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:1396
+load:0x40078000,len:13700
+load:0x40080400,len:3008
+entry 0x40080574
+MesaFacil v0.4, mesa 01 - SOMENTE SIMULACAO
+Servidor: http://host.docker.internal:8777
+Conectando ao WiFi do Velxio...
+WiFi conectado: 192.168.4.15, gateway 192.168.4.2
+Mesa 01: pagamento de TESTE confirmado. Pressione o botao.
+FICHAS LIBERADAS (simuladas): iniciando pulso 350ms.
+Saida desligada: 350 ms encerrados.
+[  8055][E][NetworkClient.cpp:278] connect(): socket error on fd 54, errno: 104, "Connection reset by peer"
+ACK: HTTP -1
+[ 10064][E][NetworkClient.cpp:278] connect(): socket error on fd 54, errno: 104, "Connection reset by peer"
+ACK: HTTP -1
+[ 12069][E][NetworkClient.cpp:278] connect(): socket error on fd 54, errno: 104, "Connection reset by peer"
+ACK: HTTP -1
+--- fim ---
+ESP32 reiniciado (parada limpa) com o backend ainda fora
+apos reinicio: pulsos novos = 0 | pedido=LIBERADO comandos=['EXECUTADO']
+--- Serial T9b (apos o reinicio) ---
+ets Jul 29 2019 12:21:46
+rst:0x1 (POWERON_RESET),boot:0x12 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:1396
+load:0x40078000,len:13700
+load:0x40080400,len:3008
+entry 0x40080574
+MesaFacil v0.4, mesa 01 - SOMENTE SIMULACAO
+Servidor: http://host.docker.internal:8777
+Conectando ao WiFi do Velxio...
+WiFi conectado: 192.168.4.15, gateway 192.168.4.2
+Comando concluido antes de reiniciar. Reenviando ACK sem novo pulso.
+ACK: HTTP 200
+Mesa liberada confirmada no painel.
+BOTAO: sem credito liberado; nenhuma acao.
+--- fim ---
+
+===== T5 reinicio DURANTE o pulso de 350 ms =====
+pedido 04fc3a49.. criado e pago (demo): HTTP 200 PAGO
+QEMU morto com SIGKILL assim que GPIO26 foi a nivel BAIXO (t=9.44s); processo vivo? False
+--- Serial ate a queda ---
+ets Jul 29 2019 12:21:46
+rst:0x1 (POWERON_RESET),boot:0x12 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:1396
+load:0x40078000,len:13700
+load:0x40080400,len:3008
+entry 0x40080574
+MesaFacil v0.4, mesa 01 - SOMENTE SIMULACAO
+Servidor: http://host.docker.internal:8777
+Conectando ao WiFi do Velxio...
+WiFi conectado: 192.168.4.15, gateway 192.168.4.2
+Mesa 01: pagamento de TESTE confirmado. Pressione o botao.
+FICHAS LIBERADAS (simuladas): iniciando pulso 350ms.
+--- fim ---
+pulso visto antes da queda: [(9.444045066833496, None)] | "Saida desligada" impresso? False
+backend logo apos a queda: pedido=PAGO comandos=['ENTREGUE']
+firmware apos reiniciar: ESTADO INCERTO impresso = True
+backend:  pedido=EM_ANALISE comandos=['INCERTO']
+pulsos apos o reinicio (3 cliques + 10 s de polling): 0
+admin /api/admin/resumo pendencias EM_ANALISE: [('04fc3a49', '01', 'EM_ANALISE', 'INCERTO')]
+chaves do resumo: ['estabelecimento', 'modo_pagamento', 'demo', 'preco_padrao_centavos', 'mesas', 'pedidos', 'eventos', 'pendencias', 'hoje']
+--- Serial T5 apos reinicio ---
+ets Jul 29 2019 12:21:46
+rst:0x1 (POWERON_RESET),boot:0x12 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:1396
+load:0x40078000,len:13700
+load:0x40080400,len:3008
+entry 0x40080574
+MesaFacil v0.4, mesa 01 - SOMENTE SIMULACAO
+Servidor: http://host.docker.internal:8777
+Conectando ao WiFi do Velxio...
+WiFi conectado: 192.168.4.15, gateway 192.168.4.2
+ATENCAO: ESTADO INCERTO, verificar manualmente antes de nova autorizacao.
+BOTAO: sem credito liberado; nenhuma acao.
+BOTAO: sem credito liberado; nenhuma acao.
+BOTAO: sem credito liberado; nenhuma acao.
+--- fim ---
+T5 estado final: ('EM_ANALISE', ['INCERTO'])
+
+--- T5 epilogo: operador resolve (reabrir) -> novo credito legitimo ---
+POST /api/admin/pedidos/<id>/resolver reabrir -> HTTP 200 {'ok': True}
+novo comando recebido: True | pulsos: 1 | pedido=LIBERADO comandos=['CANCELADO', 'EXECUTADO']
+
+RESULTADOS casos_b: {"T4": "PASS", "T4b": "PASS", "T9": "PASS", "T9_velxio_padrao_nvs_apagada": true, "T5": "PASS", "T5_epilogo_reabrir": "PASS"}

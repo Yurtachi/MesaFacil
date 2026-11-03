@@ -49,6 +49,16 @@ class Server:
     def start(self):
         if self.p and self.p.poll() is None:
             return
+        import atexit
+        import urllib.request
+        try:
+            urllib.request.urlopen(f'http://127.0.0.1:{PORT}/api/health', timeout=1)
+            raise RuntimeError(f'ja existe um servidor na porta {PORT}; abortando para nao testar o processo errado')
+        except RuntimeError:
+            raise
+        except Exception:
+            pass
+        atexit.register(self.stop)
         self.out = open(TMP / 'srv.log', 'ab')
         self.p = subprocess.Popen([sys.executable, '-u', 'app.py'], cwd=REPO, env=self.env(), stdout=self.out, stderr=self.out)
         for _ in range(50):

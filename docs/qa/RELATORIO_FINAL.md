@@ -19,7 +19,7 @@ A base `MesaFacil_Local_Integrado_v03` foi auditada, migrada para um backend mod
 | Autorização do admin, CSRF, limites, XSS, backup sem segredos | **Validado** (software) | `SEGURANCA.md` |
 | Layout 320–1440, axe WCAG 2.2 AA (automático), Lighthouse | **Validado** em Chromium headless/localhost | `TESTES_VISUAIS.md` |
 | Docker build + health + usuário não root | **Validado** local | execução manual |
-| Firmware v0.4 compilado / rodando no Velxio ou ESP32 | **NÃO validado** | sem toolchain neste ambiente |
+| Firmware v0.4 compilado / rodando no Velxio ou ESP32 | **Validado no Velxio na rodada 2** (não em ESP32 físico) | `docs/qa/INTEGRACAO_VELXIO.md` |
 | Mesa física, relé, eletrônica | **NÃO validado** | sem hardware |
 | Pix real (criação de cobrança, webhook de PSP) | **NÃO implementado/validado** | falta adaptador e credenciais |
 | Leitor de tela real, aparelhos reais, 4G | **NÃO validado** | — |

@@ -1,0 +1,21 @@
+pedido mesa 01 pago: HTTP 200 PAGO
+pedido apos 8 s + 2 cliques: PAGO | comando: PENDENTE | etapa: aguardando_botao
+--- Serial (firmware com token da mesa 02) ---
+MesaFacil v0.4, mesa 01 - SOMENTE SIMULACAO
+Servidor: http://host.docker.internal:8777
+Conectando ao WiFi do Velxio...
+W (6156) phy_init: failed to load RF calibration data (0x1102), falling back to full calibration
+WiFi conectado: 192.168.4.15, gateway 192.168.4.2
+POLL: HTTP 401 (sem liberar)
+POLL: HTTP 401 (sem liberar)
+POLL: HTTP 401 (sem liberar)
+POLL: HTTP 401 (sem liberar)
+POLL: HTTP 401 (sem liberar)
+POLL: HTTP 401 (sem liberar)
+BOTAO: sem credito liberado; nenhuma acao.
+POLL: HTTP 401 (sem liberar)
+BOTAO: sem credito liberado; nenhuma acao.
+POLL: HTTP 401 (sem liberar)
+--- fim ---
+pulsos em GPIO26: 0
+T8b PASS
