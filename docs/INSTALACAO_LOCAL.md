@@ -43,6 +43,6 @@ Dados em volume `mesafacil-data` (`/data`). Contêiner roda como usuário não r
 
 ```bash
 python -m unittest discover -s testes -v                 # backend/integração (34)
-cd qa && npm ci && npx playwright install chromium && npm test   # visual + axe + E2E (109)
+cd qa && npm ci && npx playwright install chromium && npm test   # visual + axe + E2E + animação (118)
 python -m ruff check . && python -m bandit -q -r mesafacil app.py
 ```
